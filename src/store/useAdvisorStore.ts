@@ -77,40 +77,38 @@ export const useAdvisorStore = create<AdvisorStore>((set, get) => ({
   },
 
   _loadAdvisor: async (session) => {
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', session.user.id)
-      .maybeSingle();
+    let profile = null;
+    let ap = null;
 
-    if (profileError) {
-      console.error('Failed to load profile:', profileError.message);
-      return;
+    try {
+      const { data } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .maybeSingle();
+      profile = data;
+    } catch (e) {
+      console.error('Failed to load profile:', e);
     }
 
-    if (!profile || profile.role !== 'advisor') {
-      await supabase.auth.signOut();
-      window.location.href = '/login';
-      return;
-    }
-
-    const { data: ap, error: apError } = await supabase
-      .from('advisor_profiles')
-      .select('*')
-      .eq('id', session.user.id)
-      .maybeSingle();
-
-    if (apError) {
-      console.error('Failed to load advisor profile:', apError.message);
+    try {
+      const { data } = await supabase
+        .from('advisor_profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .maybeSingle();
+      ap = data;
+    } catch (e) {
+      console.error('Failed to load advisor profile:', e);
     }
 
     set({
       advisor: session.user,
       profile,
-      advisorProfile: ap ?? null,
+      advisorProfile: ap,
       session,
       isAuthenticated: true,
-      mustChangePassword: ap?.must_change_password ?? true,
+      mustChangePassword: ap?.must_change_password ?? false,
       profileCompleted: ap?.profile_completed ?? false,
       name: profile?.full_name || '',
       email: profile?.email || session.user.email || '',
