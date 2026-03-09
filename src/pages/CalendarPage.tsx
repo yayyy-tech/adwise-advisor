@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Video, ClipboardList, Check } from 'lucide-react';
+import { Video, ClipboardList } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { AdvisorLayout } from '../components/layout/AdvisorLayout';
 import { Button } from '../components/ui/Button';
@@ -12,7 +12,7 @@ const HOURS = Array.from({ length: 13 }, (_, i) => i + 8);
 
 export default function CalendarPage() {
   const { advisor, advisorProfile } = useAdvisorStore();
-  const [view, setView] = useState<'Week' | 'Day'>('Week');
+  const [_view, _setView] = useState<'Week' | 'Day'>('Week');
   const [selectedSession, setSelectedSession] = useState<any>(null);
   const [weekOffset, setWeekOffset] = useState(0);
 

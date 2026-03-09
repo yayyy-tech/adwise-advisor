@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Check, Upload } from 'lucide-react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Upload } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { AdvisorLayout } from '../components/layout/AdvisorLayout';
 import { Button } from '../components/ui/Button';
 import { Tabs } from '../components/ui/Tabs';
@@ -22,7 +22,6 @@ const NOTIFICATION_SETTINGS = [
 
 export default function SettingsPage() {
   const { profile, advisorProfile, advisor, changePassword } = useAdvisorStore();
-  const queryClient = useQueryClient();
   const [tab, setTab] = useState('Profile');
   const [notifications, setNotifications] = useState<Record<string, boolean>>(
     Object.fromEntries(NOTIFICATION_SETTINGS.map((n) => [n, true]))
@@ -98,7 +97,7 @@ export default function SettingsPage() {
               {(plans ?? []).length === 0 ? (
                 <p className="col-span-3 font-body text-sm text-dark-muted text-center py-10">No plans configured yet.</p>
               ) : (
-                (plans ?? []).map((plan: any, i: number) => (
+                (plans ?? []).map((plan: any, _i: number) => (
                   <div key={plan.id} className={cn('rounded-[20px] bg-dark-surface p-6 border', plan.is_popular ? 'border-teal' : 'border-dark-border')}>
                     <p className="font-body text-sm font-medium text-white mb-2">{plan.name}</p>
                     <p className="font-mono text-lg text-dark-text">{'\u20b9'}{new Intl.NumberFormat('en-IN').format(plan.price_inr)}<span className="text-xs text-dark-muted">/yr</span></p>

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, MessageSquare, Phone, Calendar, FileText, Download, Send } from 'lucide-react';
+import { ArrowLeft, MessageSquare, FileText } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { AdvisorLayout } from '../components/layout/AdvisorLayout';
 import { Button } from '../components/ui/Button';

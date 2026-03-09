@@ -1,13 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FileText, Clock, Calendar, Check, Video, ClipboardList } from 'lucide-react';
+import { Video, ClipboardList } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { AdvisorLayout } from '../components/layout/AdvisorLayout';
 import { Button } from '../components/ui/Button';
 import { useAdvisorStore } from '../store/useAdvisorStore';
 import { supabase } from '../lib/supabase';
-import { formatINR } from '../lib/utils';
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -45,7 +44,7 @@ export default function DashboardPage() {
     enabled: !!advisor?.id,
   });
 
-  const [actionDone, setActionDone] = useState<Record<string, boolean>>({});
+  const [_actionDone, _setActionDone] = useState<Record<string, boolean>>({});
 
   return (
     <AdvisorLayout>

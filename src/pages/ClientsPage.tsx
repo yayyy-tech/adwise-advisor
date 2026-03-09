@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Search, AlertTriangle, Check } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { AdvisorLayout } from '../components/layout/AdvisorLayout';

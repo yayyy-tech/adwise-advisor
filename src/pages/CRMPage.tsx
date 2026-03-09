@@ -9,7 +9,7 @@ import { Button } from '../components/ui/Button';
 import { Drawer } from '../components/ui/Drawer';
 import { useAdvisorStore } from '../store/useAdvisorStore';
 import { supabase } from '../lib/supabase';
-import { cn, formatINR } from '../lib/utils';
+import { cn } from '../lib/utils';
 
 const COLUMNS = [
   { id: 'discovery_scheduled', label: 'Discovery Scheduled' },

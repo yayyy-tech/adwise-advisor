@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Check, Calendar, MessageSquare, Upload } from 'lucide-react';
+import { MessageSquare } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { AdvisorLayout } from '../components/layout/AdvisorLayout';
 import { Button } from '../components/ui/Button';
