@@ -5,6 +5,7 @@ import { Check, Plus, X, Upload } from 'lucide-react';
 import { Logo } from '../components/ui/Logo';
 import { Button } from '../components/ui/Button';
 import { useAdvisorStore } from '../store/useAdvisorStore';
+import { supabase } from '../lib/supabase';
 import { cn } from '../lib/utils';
 
 const TOTAL_STEPS = 8;
@@ -47,9 +48,47 @@ export default function OnboardingPage() {
   );
   const [slotDuration, setSlotDuration] = useState(60);
   const [selectedTemplates, setSelectedTemplates] = useState<string[]>([]);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [pwStrength, setPwStrength] = useState(0);
+  const [pwError, setPwError] = useState('');
+  const [pwLoading, setPwLoading] = useState(false);
 
-  const goNext = () => { setDir(1); if (step < TOTAL_STEPS) setOnboardingStep(step + 1); else { setProfileCompleted(true); navigate('/dashboard'); } };
+  const goNext = async () => {
+    if (step === 1) {
+      setPwError('');
+      if (!currentPassword.trim()) {
+        setPwError('Please enter your current password.');
+        return;
+      }
+      if (newPassword.length < 8) {
+        setPwError('New password must be at least 8 characters.');
+        return;
+      }
+      if (newPassword !== confirmPassword) {
+        setPwError('Passwords do not match.');
+        return;
+      }
+      setPwLoading(true);
+      try {
+        const { error } = await supabase.auth.updateUser({ password: newPassword });
+        if (error) {
+          setPwError(error.message);
+          setPwLoading(false);
+          return;
+        }
+      } catch (e: any) {
+        setPwError(e.message || 'Failed to update password.');
+        setPwLoading(false);
+        return;
+      }
+      setPwLoading(false);
+    }
+    setDir(1);
+    if (step < TOTAL_STEPS) setOnboardingStep(step + 1);
+    else { setProfileCompleted(true); navigate('/dashboard'); }
+  };
   const goBack = () => { setDir(-1); if (step > 1) setOnboardingStep(step - 1); };
 
   const renderStep = () => {
@@ -60,15 +99,16 @@ export default function OnboardingPage() {
             <h2 className="font-display text-[28px] text-white">Welcome to Adwise, {name.split(' ')[0]}.</h2>
             <p className="mt-2 font-body text-sm text-dark-muted">Let's set your new password.</p>
           </div>
-          <input type="password" placeholder="Current (temporary) password" className="h-12 w-full rounded-[12px] border border-dark-border bg-dark-base px-4 font-body text-sm text-dark-text placeholder:text-dark-muted-2 focus:border-teal focus:outline-none" />
+          <input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} placeholder="Current (temporary) password" className="h-12 w-full rounded-[12px] border border-dark-border bg-dark-base px-4 font-body text-sm text-dark-text placeholder:text-dark-muted-2 focus:border-teal focus:outline-none" />
           <div>
-            <input type="password" placeholder="New password" onChange={(e) => setPwStrength(e.target.value.length >= 8 ? (e.target.value.length >= 12 ? 3 : 2) : 1)} className="h-12 w-full rounded-[12px] border border-dark-border bg-dark-base px-4 font-body text-sm text-dark-text placeholder:text-dark-muted-2 focus:border-teal focus:outline-none" />
+            <input type="password" value={newPassword} onChange={(e) => { setNewPassword(e.target.value); setPwStrength(e.target.value.length >= 8 ? (e.target.value.length >= 12 ? 3 : 2) : e.target.value.length > 0 ? 1 : 0); }} placeholder="New password" className="h-12 w-full rounded-[12px] border border-dark-border bg-dark-base px-4 font-body text-sm text-dark-text placeholder:text-dark-muted-2 focus:border-teal focus:outline-none" />
             <div className="mt-2 flex gap-1">
               {[1, 2, 3].map((i) => <div key={i} className={cn('h-1 flex-1 rounded-full', i <= pwStrength ? (pwStrength === 1 ? 'bg-red-500' : pwStrength === 2 ? 'bg-amber-500' : 'bg-teal') : 'bg-dark-border')} />)}
             </div>
             <p className="mt-1 font-body text-[11px] text-dark-muted">{pwStrength === 0 ? '' : pwStrength === 1 ? 'Weak' : pwStrength === 2 ? 'Fair' : 'Strong'}</p>
           </div>
-          <input type="password" placeholder="Confirm new password" className="h-12 w-full rounded-[12px] border border-dark-border bg-dark-base px-4 font-body text-sm text-dark-text placeholder:text-dark-muted-2 focus:border-teal focus:outline-none" />
+          <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Confirm new password" className="h-12 w-full rounded-[12px] border border-dark-border bg-dark-base px-4 font-body text-sm text-dark-text placeholder:text-dark-muted-2 focus:border-teal focus:outline-none" />
+          {pwError && <p className="font-body text-xs text-red-500">{pwError}</p>}
         </div>
       );
       case 2: return (
@@ -301,8 +341,8 @@ export default function OnboardingPage() {
         </AnimatePresence>
         <div className="mt-8 flex items-center justify-between max-w-2xl mx-auto">
           {step > 1 ? <button onClick={goBack} className="font-body text-sm text-dark-muted hover:text-white">&larr; Back</button> : <span />}
-          <Button variant={step === TOTAL_STEPS ? 'teal' : 'primary'} onClick={goNext}>
-            {step === TOTAL_STEPS ? 'Go to My Dashboard \u2192' : step === 1 ? 'Set Password \u2192' : 'Continue'}
+          <Button variant={step === TOTAL_STEPS ? 'teal' : 'primary'} onClick={goNext} disabled={pwLoading}>
+            {step === TOTAL_STEPS ? 'Go to My Dashboard \u2192' : step === 1 ? (pwLoading ? 'Updating...' : 'Set Password \u2192') : 'Continue'}
           </Button>
         </div>
       </div>

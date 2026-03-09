@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Logo } from '../components/ui/Logo';
 import { Button } from '../components/ui/Button';
 import { useAdvisorStore } from '../store/useAdvisorStore';
+import { supabase } from '../lib/supabase';
 
 const STATS = [
   { value: '\u20b92.8Cr', desc: 'Average AUM per advisor on Adwise' },
@@ -26,6 +27,8 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -43,13 +46,38 @@ export default function LoginPage() {
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) return;
     setError('');
+    setResetSent(false);
     setLoading(true);
     try {
-      await signIn(email, password);
+      const result = await signIn(email, password);
+      if (result.error) {
+        setError(result.error);
+      }
     } catch (e: any) {
       setError(e.message || 'Invalid credentials');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email.trim()) {
+      setError('Please enter your email address first.');
+      return;
+    }
+    setError('');
+    setResetLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email);
+      if (error) {
+        setError(error.message);
+      } else {
+        setResetSent(true);
+      }
+    } catch (e: any) {
+      setError(e.message || 'Failed to send reset email.');
+    } finally {
+      setResetLoading(false);
     }
   };
 
@@ -72,8 +100,9 @@ export default function LoginPage() {
             <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email address" className="h-12 w-full rounded-[12px] border border-light-border bg-white px-4 font-body text-[15px] text-light-text placeholder:text-light-muted focus:border-teal focus:outline-none" />
             <input value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleLogin()} type="password" placeholder="Password" className="h-12 w-full rounded-[12px] border border-light-border bg-white px-4 font-body text-[15px] text-light-text placeholder:text-light-muted focus:border-teal focus:outline-none" />
             {error && <p className="font-body text-xs text-red-500">{error}</p>}
+            {resetSent && <p className="font-body text-xs text-teal">Password reset email sent. Check your inbox.</p>}
             <Button variant="primary" size="lg" fullWidth onClick={handleLogin} disabled={loading} className="bg-dark-base text-white hover:bg-dark-surface-2">{loading ? 'Signing in...' : 'Sign In'} &rarr;</Button>
-            <button className="w-full text-center font-body text-sm text-light-muted hover:text-teal">Forgot password?</button>
+            <button type="button" onClick={handleForgotPassword} disabled={resetLoading} className="w-full text-center font-body text-sm text-light-muted hover:text-teal">{resetLoading ? 'Sending...' : 'Forgot password?'}</button>
           </div>
 
           <p className="mt-8 font-body text-xs text-light-muted">
